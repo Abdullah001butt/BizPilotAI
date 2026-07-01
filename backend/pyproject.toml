@@ -1,0 +1,89 @@
+[project]
+name = "bizpilot-ai-backend"
+version = "0.1.0"
+description = "BizPilot AI — AI-powered Business Operating System for SMBs (FastAPI backend)"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Proprietary" }
+authors = [{ name = "BizPilot AI" }]
+
+# ─────────────────────────── Runtime dependencies ───────────────────────────
+dependencies = [
+    # Web framework + server
+    "fastapi==0.115.6",
+    "uvicorn[standard]==0.34.0",
+    "python-multipart==0.0.20",
+
+    # Data & ORM
+    "sqlalchemy[asyncio]==2.0.36",
+    "alembic==1.14.0",
+    "asyncpg==0.30.0",          # PostgreSQL async driver (production)
+    "aiosqlite==0.20.0",        # SQLite async driver (local dev)
+    "greenlet==3.1.1",          # required by SQLAlchemy async
+
+    # Validation & settings
+    "pydantic==2.10.4",
+    "pydantic-settings==2.7.1",
+    "email-validator==2.2.0",
+
+    # Security
+    "passlib[argon2]==1.7.4",
+    "argon2-cffi==23.1.0",
+    "pyjwt==2.10.1",
+
+    # Observability
+    "structlog==24.4.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest==8.3.4",
+    "pytest-asyncio==0.25.2",
+    "pytest-cov==6.0.0",
+    "httpx==0.28.1",            # async test client
+    "ruff==0.8.6",
+    "mypy==1.14.1",
+    "types-passlib==1.7.7.20240819",
+]
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["app*"]
+
+# ─────────────────────────────── Ruff (lint+format) ─────────────────────────
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+src = ["app", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "C4", "SIM", "ASYNC"]
+ignore = ["B008"]  # FastAPI uses function calls (Depends/Query) in argument defaults
+
+[tool.ruff.lint.isort]
+known-first-party = ["app"]
+
+# ─────────────────────────────────── Mypy ───────────────────────────────────
+[tool.mypy]
+python_version = "3.10"
+plugins = ["pydantic.mypy"]
+warn_unused_ignores = true
+warn_redundant_casts = true
+disallow_untyped_defs = true
+ignore_missing_imports = true
+
+# ─────────────────────────────────── Pytest ─────────────────────────────────
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+testpaths = ["tests"]
+addopts = "-ra --strict-markers"
+filterwarnings = ["ignore::DeprecationWarning"]
+
+[tool.coverage.run]
+source = ["app"]
+omit = ["app/main.py", "alembic/*"]
