@@ -19,6 +19,7 @@ from app.models.company import Company
 from app.models.user import User, UserRole
 from app.repositories.company import CompanyRepository
 from app.repositories.user import UserRepository
+from app.services.analytics import AnalyticsService
 from app.services.api_key import ApiKeyService
 from app.services.auth import AuthService
 from app.services.company import CompanyService
@@ -134,7 +135,12 @@ def get_sale_service(session: SessionDep, user: CurrentUser) -> SaleService:
     return SaleService(session, user.company_id)
 
 
+def get_analytics_service(session: SessionDep, user: CurrentUser) -> AnalyticsService:
+    return AnalyticsService(session, user.company_id)
+
+
 ProductServiceDep = Annotated[ProductService, Depends(get_product_service)]
 SupplierServiceDep = Annotated[SupplierService, Depends(get_supplier_service)]
 CustomerServiceDep = Annotated[CustomerService, Depends(get_customer_service)]
 SaleServiceDep = Annotated[SaleService, Depends(get_sale_service)]
+AnalyticsServiceDep = Annotated[AnalyticsService, Depends(get_analytics_service)]
