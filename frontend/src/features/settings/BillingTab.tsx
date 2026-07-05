@@ -30,8 +30,14 @@ export function BillingTab() {
     const result = params.get("billing");
     if (!result) return;
     if (result === "success") {
-      toast.success("Welcome to Pro! Your subscription is active.");
-      void queryClient.invalidateQueries({ queryKey: ["subscription"] });
+      // Pull the fresh plan from Stripe, then refresh the UI.
+      billingApi
+        .sync()
+        .catch(() => undefined)
+        .finally(() => {
+          void queryClient.invalidateQueries({ queryKey: ["subscription"] });
+          toast.success("Welcome to Pro! Your subscription is active.");
+        });
     } else if (result === "cancelled") {
       toast.info("Checkout cancelled.");
     }

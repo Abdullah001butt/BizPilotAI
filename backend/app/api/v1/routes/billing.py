@@ -44,6 +44,13 @@ async def create_portal(service: BillingServiceDep, _: AdminUser) -> CheckoutRes
     return CheckoutResponse(url=await service.create_portal_session())
 
 
+@router.post("/sync", response_model=SubscriptionPublic, summary="Sync plan from Stripe")
+async def sync_subscription(service: BillingServiceDep) -> SubscriptionPublic:
+    """Refresh the local plan from Stripe (used on return from Checkout)."""
+    subscription = await service.sync_from_stripe()
+    return SubscriptionPublic.model_validate(subscription)
+
+
 @router.post("/webhook", include_in_schema=False, summary="Stripe webhook")
 async def stripe_webhook(
     request: Request,

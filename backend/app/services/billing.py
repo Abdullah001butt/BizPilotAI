@@ -36,6 +36,20 @@ def _to_datetime(unix_ts: int | None) -> datetime | None:
     return datetime.fromtimestamp(unix_ts, tz=timezone.utc) if unix_ts else None
 
 
+def _period_end(stripe_sub: Any) -> datetime | None:
+    """Extract current_period_end, whether at the top level or on the first item.
+
+    Newer Stripe API versions moved this field onto subscription items.
+    """
+    ts = stripe_sub.get("current_period_end")
+    if ts is None:
+        try:
+            ts = stripe_sub["items"]["data"][0]["current_period_end"]
+        except (KeyError, IndexError, TypeError):
+            ts = None
+    return _to_datetime(ts)
+
+
 class BillingService:
     def __init__(self, session: AsyncSession, company: Company) -> None:
         self.session = session
@@ -82,6 +96,37 @@ class BillingService:
             return_url=f"{settings.FRONTEND_URL}/settings",
         )
         return session.url
+
+    async def sync_from_stripe(self) -> Subscription:
+        """Pull the customer's current subscription state from Stripe.
+
+        Used as a fallback so upgrades reflect immediately after Checkout even
+        without a configured webhook (webhooks remain the real-time path).
+        """
+        sub = await self.get_or_create_subscription()
+        if not settings.is_billing_configured or not sub.stripe_customer_id:
+            return sub
+        _configure_stripe()
+
+        stripe_subs = await run_in_threadpool(
+            stripe.Subscription.list,
+            customer=sub.stripe_customer_id,
+            status="all",
+            limit=10,
+        )
+        active = next((s for s in stripe_subs.data if s.status in _ACTIVE_STATUSES), None)
+        if active is not None:
+            sub.plan = PlanTier.PRO
+            sub.status = active.status
+            sub.stripe_subscription_id = active.id
+            sub.current_period_end = _period_end(active)
+        else:
+            sub.plan = PlanTier.FREE
+            if stripe_subs.data:
+                sub.status = stripe_subs.data[0].status
+        await self.session.commit()
+        await self.session.refresh(sub)
+        return sub
 
     async def _create_customer(self, sub: Subscription) -> str:
         customer = await run_in_threadpool(
@@ -132,7 +177,7 @@ class StripeWebhookHandler:
         sub.status = status
         sub.plan = PlanTier.PRO if status in _ACTIVE_STATUSES else PlanTier.FREE
         sub.stripe_subscription_id = obj.get("id")
-        sub.current_period_end = _to_datetime(obj.get("current_period_end"))
+        sub.current_period_end = _period_end(obj)
         await self.session.commit()
         logger.info("subscription_synced", company_id=sub.company_id, status=status)
 

@@ -23,4 +23,6 @@ export const billingApi = {
     (await apiClient.post<{ url: string }>("/billing/checkout")).data.url,
   portal: async (): Promise<string> =>
     (await apiClient.post<{ url: string }>("/billing/portal")).data.url,
+  sync: async (): Promise<Subscription> =>
+    (await apiClient.post<Subscription>("/billing/sync")).data,
 };
