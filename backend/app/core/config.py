@@ -65,7 +65,7 @@ class Settings(BaseSettings):
 
     # ── AI / LLM (Gemini) ────────────────────────────────────────────────────
     GEMINI_API_KEY: str = ""
-    GEMINI_MODEL: str = "gemini-2.0-flash"
+    GEMINI_MODEL: str = "gemini-2.5-flash"
 
     @field_validator("BACKEND_CORS_ORIGINS", mode="before")
     @classmethod
