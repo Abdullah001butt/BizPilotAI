@@ -23,9 +23,9 @@ import { cn } from "@/lib/utils";
 const NAV_ITEMS = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard, enabled: true },
   { to: "/copilot", label: "AI Copilot", icon: Bot, enabled: false },
-  { to: "/inventory", label: "Inventory", icon: Boxes, enabled: false },
-  { to: "/sales", label: "Sales", icon: Receipt, enabled: false },
-  { to: "/customers", label: "Customers", icon: Users, enabled: false },
+  { to: "/inventory", label: "Inventory", icon: Boxes, enabled: true },
+  { to: "/sales", label: "Sales", icon: Receipt, enabled: true },
+  { to: "/customers", label: "Customers", icon: Users, enabled: true },
   { to: "/reports", label: "Reports", icon: BarChart3, enabled: false },
   { to: "/settings", label: "Settings", icon: Settings, enabled: true },
 ];

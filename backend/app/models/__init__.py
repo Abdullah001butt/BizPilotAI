@@ -7,7 +7,26 @@ list as the schema grows across phases.
 
 from app.models.api_key import ApiKey
 from app.models.company import Company
+from app.models.customer import Customer
+from app.models.product import Product
 from app.models.refresh_token import RefreshToken
+from app.models.sale import Sale, SaleItem, SaleStatus
+from app.models.stock_movement import StockMovement, StockMovementReason
+from app.models.supplier import Supplier
 from app.models.user import User, UserRole
 
-__all__ = ["ApiKey", "Company", "RefreshToken", "User", "UserRole"]
+__all__ = [
+    "ApiKey",
+    "Company",
+    "Customer",
+    "Product",
+    "RefreshToken",
+    "Sale",
+    "SaleItem",
+    "SaleStatus",
+    "StockMovement",
+    "StockMovementReason",
+    "Supplier",
+    "User",
+    "UserRole",
+]

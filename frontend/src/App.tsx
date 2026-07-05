@@ -4,8 +4,11 @@ import { AppShell } from "@/components/layout/AppShell";
 import { AuthLayout } from "@/features/auth/AuthLayout";
 import { LoginPage } from "@/features/auth/LoginPage";
 import { RegisterPage } from "@/features/auth/RegisterPage";
+import { CustomersPage } from "@/features/customers/CustomersPage";
 import { DashboardPage } from "@/features/dashboard/DashboardPage";
+import { InventoryPage } from "@/features/inventory/InventoryPage";
 import { NotFoundPage } from "@/features/misc/NotFoundPage";
+import { SalesPage } from "@/features/sales/SalesPage";
 import { SettingsPage } from "@/features/settings/SettingsPage";
 import { ProtectedRoute } from "@/routes/ProtectedRoute";
 import { PublicOnlyRoute } from "@/routes/PublicOnlyRoute";
@@ -26,6 +29,9 @@ export function App() {
         <Route element={<ProtectedRoute />}>
           <Route element={<AppShell />}>
             <Route index element={<DashboardPage />} />
+            <Route path="/inventory" element={<InventoryPage />} />
+            <Route path="/sales" element={<SalesPage />} />
+            <Route path="/customers" element={<CustomersPage />} />
             <Route path="/settings" element={<SettingsPage />} />
           </Route>
         </Route>

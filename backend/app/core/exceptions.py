@@ -38,6 +38,14 @@ class ConflictError(AppError):
     message = "The resource already exists."
 
 
+class BusinessRuleError(AppError):
+    """A request is well-formed but violates a business rule."""
+
+    status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
+    error_code = "business_rule_violation"
+    message = "This operation is not allowed."
+
+
 class AuthenticationError(AppError):
     status_code = status.HTTP_401_UNAUTHORIZED
     error_code = "authentication_failed"

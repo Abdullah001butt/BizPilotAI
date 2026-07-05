@@ -115,12 +115,11 @@ BizPilotAI/
 
 - **Phase 1 ✅** — Foundation & Auth
 - **Phase 2 ✅** — Multi-tenancy (Company model), Settings, API Keys
-- **Phase 3** — Inventory & Suppliers
-- **Phase 4** — Sales, Invoices & Expenses
-- **Phase 5** — Customer CRM
-- **Phase 6** — AI Copilot (LLM + RAG over business data)
-- **Phase 7** — Document Intelligence & OCR
-- **Phase 8** — Forecasting, Reports, Notifications
+- **Phase 4 ✅** — Inventory (Products, Suppliers, stock) + Sales (Customers, Invoices)
+- **Phase 3** — Live Dashboard metrics
+- **Phase 7** — AI Copilot (Gemini + RAG over business data)
+- **Billing** — Stripe subscriptions
+- Later: CRM depth, Document Intelligence/OCR, Forecasting, Reports, Tasks/Calendar, Global Search
 
 ## 📄 License
 

@@ -22,6 +22,10 @@ from app.repositories.user import UserRepository
 from app.services.api_key import ApiKeyService
 from app.services.auth import AuthService
 from app.services.company import CompanyService
+from app.services.customer import CustomerService
+from app.services.product import ProductService
+from app.services.sale import SaleService
+from app.services.supplier import SupplierService
 from app.services.user import UserService
 
 # `auto_error=False` lets us raise our own domain error (mapped to a clean 401)
@@ -111,3 +115,26 @@ def get_api_key_service(session: SessionDep, user: CurrentUser) -> ApiKeyService
 CompanyServiceDep = Annotated[CompanyService, Depends(get_company_service)]
 UserServiceDep = Annotated[UserService, Depends(get_user_service)]
 ApiKeyServiceDep = Annotated[ApiKeyService, Depends(get_api_key_service)]
+
+
+# ── Tenant-scoped business services ───────────────────────────────────────────
+def get_product_service(session: SessionDep, user: CurrentUser) -> ProductService:
+    return ProductService(session, user.company_id)
+
+
+def get_supplier_service(session: SessionDep, user: CurrentUser) -> SupplierService:
+    return SupplierService(session, user.company_id)
+
+
+def get_customer_service(session: SessionDep, user: CurrentUser) -> CustomerService:
+    return CustomerService(session, user.company_id)
+
+
+def get_sale_service(session: SessionDep, user: CurrentUser) -> SaleService:
+    return SaleService(session, user.company_id)
+
+
+ProductServiceDep = Annotated[ProductService, Depends(get_product_service)]
+SupplierServiceDep = Annotated[SupplierService, Depends(get_supplier_service)]
+CustomerServiceDep = Annotated[CustomerService, Depends(get_customer_service)]
+SaleServiceDep = Annotated[SaleService, Depends(get_sale_service)]

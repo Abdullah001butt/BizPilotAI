@@ -9,14 +9,28 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from sqlalchemy import DateTime, func
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy import DateTime, ForeignKey, func
+from sqlalchemy.orm import Mapped, declared_attr, mapped_column
 
 
 class IdMixin:
     """Surrogate auto-incrementing integer primary key."""
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+
+
+class CompanyOwnedMixin:
+    """Adds the tenant foreign key shared by every company-owned table (DRY).
+
+    Pairing this with `TenantScopedRepository` guarantees consistent multi-tenant
+    isolation across the whole business schema.
+    """
+
+    @declared_attr
+    def company_id(cls) -> Mapped[int]:  # noqa: N805
+        return mapped_column(
+            ForeignKey("companies.id", ondelete="CASCADE"), index=True, nullable=False
+        )
 
 
 class TimestampMixin:
