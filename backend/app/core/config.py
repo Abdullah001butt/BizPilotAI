@@ -67,6 +67,14 @@ class Settings(BaseSettings):
     GEMINI_API_KEY: str = ""
     GEMINI_MODEL: str = "gemini-2.5-flash"
 
+    # ── Billing (Stripe) ─────────────────────────────────────────────────────
+    STRIPE_SECRET_KEY: str = ""
+    STRIPE_WEBHOOK_SECRET: str = ""
+    STRIPE_PRICE_ID: str = ""  # the recurring Price for the Pro plan
+    STRIPE_PUBLISHABLE_KEY: str = ""
+    # Where Stripe redirects back to after checkout / portal.
+    FRONTEND_URL: str = "http://localhost:5173"
+
     @field_validator("BACKEND_CORS_ORIGINS", mode="before")
     @classmethod
     def _split_cors(cls, value: object) -> object:
@@ -89,6 +97,11 @@ class Settings(BaseSettings):
     @property
     def is_ai_configured(self) -> bool:
         return bool(self.GEMINI_API_KEY)
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def is_billing_configured(self) -> bool:
+        return bool(self.STRIPE_SECRET_KEY and self.STRIPE_PRICE_ID)
 
 
 @lru_cache

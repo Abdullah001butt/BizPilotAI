@@ -1,6 +1,8 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
+import axios from "axios";
 import { Bot, Loader2, Send, Sparkles } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -25,12 +27,20 @@ export function CopilotPage() {
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
+  const [needsUpgrade, setNeedsUpgrade] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const chat = useMutation({
     mutationFn: (history: ChatMessage[]) => copilotApi.chat(history),
     onSuccess: (reply) => setMessages((prev) => [...prev, { role: "assistant", content: reply }]),
-    onError: (error) => toast.error(getApiErrorMessage(error)),
+    onError: (error) => {
+      // 402 → the Copilot is a Pro feature and this company is on Free.
+      if (axios.isAxiosError(error) && error.response?.status === 402) {
+        setNeedsUpgrade(true);
+      } else {
+        toast.error(getApiErrorMessage(error));
+      }
+    },
   });
 
   useEffect(() => {
@@ -67,6 +77,30 @@ export function CopilotPage() {
               Add a <code className="rounded bg-muted px-1">GEMINI_API_KEY</code> to the backend
               environment to enable the Copilot. Everything else keeps working without it.
             </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (needsUpgrade) {
+    return (
+      <div className="mx-auto max-w-xl py-16">
+        <Card>
+          <CardContent className="flex flex-col items-center gap-4 p-8 text-center">
+            <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <Sparkles className="h-6 w-6" />
+            </span>
+            <h2 className="text-lg font-semibold">The AI Copilot is a Pro feature</h2>
+            <p className="text-sm text-muted-foreground">
+              Upgrade to Pro to ask questions about your business and get instant, data-grounded
+              answers.
+            </p>
+            <Button asChild>
+              <Link to="/settings?billing=upgrade">
+                <Sparkles className="h-4 w-4" /> Upgrade to Pro
+              </Link>
+            </Button>
           </CardContent>
         </Card>
       </div>

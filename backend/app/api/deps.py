@@ -16,7 +16,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.ai.base import LLMProvider
 from app.ai.gemini import GeminiProvider
 from app.core.config import settings
-from app.core.exceptions import AuthenticationError, NotFoundError, PermissionDeniedError
+from app.core.exceptions import (
+    AuthenticationError,
+    NotFoundError,
+    PaymentRequiredError,
+    PermissionDeniedError,
+)
 from app.core.security import decode_token
 from app.db.session import get_db
 from app.models.company import Company
@@ -26,6 +31,7 @@ from app.repositories.user import UserRepository
 from app.services.analytics import AnalyticsService
 from app.services.api_key import ApiKeyService
 from app.services.auth import AuthService
+from app.services.billing import BillingService
 from app.services.company import CompanyService
 from app.services.copilot import CopilotService
 from app.services.customer import CustomerService
@@ -173,3 +179,27 @@ def get_copilot_service(
 
 
 CopilotServiceDep = Annotated[CopilotService, Depends(get_copilot_service)]
+
+
+# ── Billing ───────────────────────────────────────────────────────────────────
+def get_billing_service(session: SessionDep, company: CurrentCompany) -> BillingService:
+    return BillingService(session, company)
+
+
+BillingServiceDep = Annotated[BillingService, Depends(get_billing_service)]
+
+
+async def require_pro(session: SessionDep, company: CurrentCompany) -> None:
+    """Gate a route behind a Pro subscription.
+
+    Gating is only enforced when billing is actually configured, so a deployment
+    without Stripe keys (e.g. local dev) keeps every feature open.
+    """
+    if not settings.is_billing_configured:
+        return
+    subscription = await BillingService(session, company).get_or_create_subscription()
+    if not subscription.is_pro:
+        raise PaymentRequiredError("The AI Copilot is available on the Pro plan.")
+
+
+RequirePro = Annotated[None, Depends(require_pro)]

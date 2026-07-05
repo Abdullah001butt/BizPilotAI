@@ -11,6 +11,7 @@ from fastapi import APIRouter
 from app.api.v1.routes import (
     api_keys,
     auth,
+    billing,
     company,
     copilot,
     customers,
@@ -34,3 +35,4 @@ api_router.include_router(customers.router)
 api_router.include_router(sales.router)
 api_router.include_router(dashboard.router)
 api_router.include_router(copilot.router)
+api_router.include_router(billing.router)

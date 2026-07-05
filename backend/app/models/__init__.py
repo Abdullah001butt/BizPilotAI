@@ -12,6 +12,7 @@ from app.models.product import Product
 from app.models.refresh_token import RefreshToken
 from app.models.sale import Sale, SaleItem, SaleStatus
 from app.models.stock_movement import StockMovement, StockMovementReason
+from app.models.subscription import PlanTier, Subscription
 from app.models.supplier import Supplier
 from app.models.user import User, UserRole
 
@@ -19,6 +20,7 @@ __all__ = [
     "ApiKey",
     "Company",
     "Customer",
+    "PlanTier",
     "Product",
     "RefreshToken",
     "Sale",
@@ -26,6 +28,7 @@ __all__ = [
     "SaleStatus",
     "StockMovement",
     "StockMovementReason",
+    "Subscription",
     "Supplier",
     "User",
     "UserRole",

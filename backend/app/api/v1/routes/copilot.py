@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from fastapi import APIRouter
 
-from app.api.deps import CopilotServiceDep, CurrentUser
+from app.api.deps import CopilotServiceDep, CurrentUser, RequirePro
 from app.core.config import settings
 from app.schemas.copilot import ChatRequest, ChatResponse, CopilotStatus
 
@@ -21,7 +21,7 @@ async def status(_: CurrentUser) -> CopilotStatus:
 
 
 @router.post("/chat", response_model=ChatResponse, summary="Ask the Copilot")
-async def chat(data: ChatRequest, service: CopilotServiceDep) -> ChatResponse:
-    """Answer a question grounded in the company's live business data."""
+async def chat(data: ChatRequest, service: CopilotServiceDep, _: RequirePro) -> ChatResponse:
+    """Answer a question grounded in the company's live business data (Pro plan)."""
     answer = await service.ask(data.messages)
     return ChatResponse(message=answer)

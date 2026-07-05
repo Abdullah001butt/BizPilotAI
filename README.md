@@ -118,7 +118,7 @@ BizPilotAI/
 - **Phase 4 ✅** — Inventory (Products, Suppliers, stock) + Sales (Customers, Invoices)
 - **Phase 3 ✅** — Live Dashboard metrics (revenue/profit, health score, top products)
 - **Phase 7 ✅** — AI Copilot (Gemini, grounded in live business data)
-- **Billing** — Stripe subscriptions
+- **Billing ✅** — Stripe subscriptions (Free/Pro), Copilot gated to Pro
 - Later: CRM depth, Document Intelligence/OCR, Forecasting, Reports, Tasks/Calendar, Global Search
 
 ## 📄 License

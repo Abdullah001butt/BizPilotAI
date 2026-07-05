@@ -77,3 +77,19 @@ class AIError(AppError):
     status_code = status.HTTP_502_BAD_GATEWAY
     error_code = "ai_error"
     message = "The AI service failed to respond. Please try again."
+
+
+class PaymentRequiredError(AppError):
+    """A feature requires a paid plan the company does not have."""
+
+    status_code = status.HTTP_402_PAYMENT_REQUIRED
+    error_code = "payment_required"
+    message = "This feature requires a Pro subscription."
+
+
+class BillingUnavailableError(AppError):
+    """Billing (Stripe) is not configured on the server."""
+
+    status_code = status.HTTP_503_SERVICE_UNAVAILABLE
+    error_code = "billing_not_configured"
+    message = "Billing is not configured."
