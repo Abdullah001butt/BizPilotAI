@@ -4,10 +4,11 @@ from __future__ import annotations
 
 from fastapi import APIRouter, Response, status
 
-from app.api.deps import AuthServiceDep, CurrentUser
+from app.api.deps import AuthServiceDep, CurrentCompany, CurrentUser
 from app.schemas.auth import LoginRequest, RefreshRequest, RegisterRequest
+from app.schemas.company import CompanyPublic
 from app.schemas.token import TokenPair
-from app.schemas.user import UserPublic
+from app.schemas.user import MeResponse, UserPublic
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -48,7 +49,10 @@ async def logout(data: RefreshRequest, service: AuthServiceDep) -> Response:
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
-@router.get("/me", response_model=UserPublic, summary="Current user profile")
-async def me(current_user: CurrentUser) -> UserPublic:
-    """Return the profile of the currently authenticated user."""
-    return UserPublic.model_validate(current_user)
+@router.get("/me", response_model=MeResponse, summary="Current user + company")
+async def me(current_user: CurrentUser, company: CurrentCompany) -> MeResponse:
+    """Return the authenticated user together with their company context."""
+    return MeResponse(
+        user=UserPublic.model_validate(current_user),
+        company=CompanyPublic.model_validate(company),
+    )

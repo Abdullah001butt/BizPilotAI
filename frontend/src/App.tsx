@@ -6,6 +6,7 @@ import { LoginPage } from "@/features/auth/LoginPage";
 import { RegisterPage } from "@/features/auth/RegisterPage";
 import { DashboardPage } from "@/features/dashboard/DashboardPage";
 import { NotFoundPage } from "@/features/misc/NotFoundPage";
+import { SettingsPage } from "@/features/settings/SettingsPage";
 import { ProtectedRoute } from "@/routes/ProtectedRoute";
 import { PublicOnlyRoute } from "@/routes/PublicOnlyRoute";
 
@@ -25,6 +26,7 @@ export function App() {
         <Route element={<ProtectedRoute />}>
           <Route element={<AppShell />}>
             <Route index element={<DashboardPage />} />
+            <Route path="/settings" element={<SettingsPage />} />
           </Route>
         </Route>
 

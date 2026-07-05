@@ -50,3 +50,34 @@ class BaseRepository(Generic[ModelType]):
         """Stage a row for deletion."""
         await self.session.delete(entity)
         await self.session.flush()
+
+
+class TenantScopedRepository(BaseRepository[ModelType]):
+    """Base for repositories over tenant-owned tables.
+
+    Every read is automatically filtered by `company_id`, so it is structurally
+    impossible for a query to return another tenant's rows. Concrete subclasses
+    must map a table that has a `company_id` column.
+    """
+
+    def __init__(self, session: AsyncSession, company_id: int) -> None:
+        super().__init__(session)
+        self.company_id = company_id
+
+    async def get(self, entity_id: int) -> ModelType | None:
+        """Fetch a row by id, but only within the current tenant."""
+        entity = await self.session.get(self.model, entity_id)
+        if entity is None or getattr(entity, "company_id", None) != self.company_id:
+            return None
+        return entity
+
+    async def list(self, *, limit: int = 100, offset: int = 0) -> list[ModelType]:
+        """List rows belonging to the current tenant, newest first."""
+        result = await self.session.execute(
+            select(self.model)
+            .where(self.model.company_id == self.company_id)  # type: ignore[attr-defined]
+            .order_by(self.model.id.desc())  # type: ignore[attr-defined]
+            .limit(limit)
+            .offset(offset)
+        )
+        return list(result.scalars().all())

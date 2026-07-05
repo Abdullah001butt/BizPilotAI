@@ -28,6 +28,7 @@ build/
 node_modules/
 frontend/dist/
 frontend/.vite/
+*.tsbuildinfo
 *.local
 
 # ───────────────────────── Environment / Secrets ────────────────────

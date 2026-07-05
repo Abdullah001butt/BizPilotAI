@@ -12,11 +12,20 @@ _HAS_DIGIT = re.compile(r"\d")
 
 
 class RegisterRequest(BaseModel):
-    """Payload to create a new account."""
+    """Payload to create a new account (and its company on first signup)."""
 
     email: EmailStr
     full_name: str = Field(min_length=2, max_length=120)
+    company_name: str = Field(min_length=2, max_length=160)
     password: str = Field(min_length=8, max_length=128)
+
+    @field_validator("company_name")
+    @classmethod
+    def _strip_company(cls, value: str) -> str:
+        cleaned = value.strip()
+        if not cleaned:
+            raise ValueError("Company name cannot be blank.")
+        return cleaned
 
     @field_validator("password")
     @classmethod

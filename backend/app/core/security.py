@@ -61,13 +61,13 @@ def _create_token(
     return jwt.encode(payload, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
 
 
-def create_access_token(*, subject: str, role: str) -> str:
-    """Create a short-lived access token carrying the user's role."""
+def create_access_token(*, subject: str, role: str, company_id: int) -> str:
+    """Create a short-lived access token carrying the user's role and tenant."""
     return _create_token(
         subject=subject,
         token_type="access",
         expires_delta=timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES),
-        extra_claims={"role": role},
+        extra_claims={"role": role, "cid": company_id},
     )
 
 

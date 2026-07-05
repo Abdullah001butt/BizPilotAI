@@ -62,6 +62,19 @@ export function RegisterPage() {
           </div>
 
           <div className="space-y-2">
+            <Label htmlFor="company_name">Company name</Label>
+            <Input
+              id="company_name"
+              autoComplete="organization"
+              placeholder="Acme Inc"
+              {...register("company_name")}
+            />
+            {errors.company_name && (
+              <p className="text-sm text-destructive">{errors.company_name.message}</p>
+            )}
+          </div>
+
+          <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input
               id="email"

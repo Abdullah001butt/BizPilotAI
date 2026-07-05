@@ -1,9 +1,10 @@
 import { apiClient } from "@/lib/api/client";
-import type { TokenPair, User } from "@/types/auth";
+import type { MeResponse, TokenPair, User } from "@/types/auth";
 
 export interface RegisterPayload {
   email: string;
   full_name: string;
+  company_name: string;
   password: string;
 }
 
@@ -24,8 +25,8 @@ export const authApi = {
     return data;
   },
 
-  me: async (): Promise<User> => {
-    const { data } = await apiClient.get<User>("/auth/me");
+  me: async (): Promise<MeResponse> => {
+    const { data } = await apiClient.get<MeResponse>("/auth/me");
     return data;
   },
 

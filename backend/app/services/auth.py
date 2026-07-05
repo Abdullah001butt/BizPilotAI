@@ -33,6 +33,7 @@ from app.repositories.refresh_token import RefreshTokenRepository
 from app.repositories.user import UserRepository
 from app.schemas.auth import LoginRequest, RegisterRequest
 from app.schemas.token import TokenPair
+from app.services.company import CompanyService
 
 logger = get_logger(__name__)
 
@@ -53,25 +54,33 @@ class AuthService:
         self.session = session
         self.users = UserRepository(session)
         self.tokens = RefreshTokenRepository(session)
+        self.companies = CompanyService(session)
 
     # ── Registration ─────────────────────────────────────────────────────────
-    async def register(
-        self, data: RegisterRequest, *, role: UserRole = UserRole.EMPLOYEE
-    ) -> User:
-        """Create a new user, rejecting duplicate emails."""
+    async def register(self, data: RegisterRequest) -> User:
+        """Register a new company and its owner (an ADMIN) atomically.
+
+        Self-service signup always creates a brand-new tenant; the registrant is
+        that company's first administrator. Both rows commit in one transaction,
+        so a duplicate-email failure leaves no orphaned company behind.
+        """
         if await self.users.email_exists(data.email):
             raise ConflictError("An account with this email already exists.")
 
+        company = await self.companies.create(data.company_name)
         user = User(
+            company_id=company.id,
             email=data.email.lower(),
             full_name=data.full_name,
             hashed_password=hash_password(data.password),
-            role=role,
+            role=UserRole.ADMIN,
         )
         await self.users.add(user)
         await self.session.commit()
         await self.session.refresh(user)
-        logger.info("user_registered", user_id=user.id, email=user.email)
+        logger.info(
+            "user_registered", user_id=user.id, email=user.email, company_id=company.id
+        )
         return user
 
     # ── Login ─────────────────────────────────────────────────────────────────
@@ -145,7 +154,9 @@ class AuthService:
     async def _issue_token_pair(self, user: User) -> TokenPair:
         """Mint an access token and a persisted, rotatable refresh token."""
         jti = uuid.uuid4().hex
-        access = create_access_token(subject=str(user.id), role=user.role.value)
+        access = create_access_token(
+            subject=str(user.id), role=user.role.value, company_id=user.company_id
+        )
         refresh = create_refresh_token(subject=str(user.id), jti=jti)
 
         await self.tokens.add(

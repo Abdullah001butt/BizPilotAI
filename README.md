@@ -113,8 +113,8 @@ BizPilotAI/
 
 ## 🗺️ Roadmap (phases)
 
-- **Phase 1 ✅** — Foundation & Auth (this release)
-- **Phase 2** — Dashboard metrics, Company/Tenant model, Settings
+- **Phase 1 ✅** — Foundation & Auth
+- **Phase 2 ✅** — Multi-tenancy (Company model), Settings, API Keys
 - **Phase 3** — Inventory & Suppliers
 - **Phase 4** — Sales, Invoices & Expenses
 - **Phase 5** — Customer CRM

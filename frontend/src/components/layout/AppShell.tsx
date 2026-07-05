@@ -27,7 +27,7 @@ const NAV_ITEMS = [
   { to: "/sales", label: "Sales", icon: Receipt, enabled: false },
   { to: "/customers", label: "Customers", icon: Users, enabled: false },
   { to: "/reports", label: "Reports", icon: BarChart3, enabled: false },
-  { to: "/settings", label: "Settings", icon: Settings, enabled: false },
+  { to: "/settings", label: "Settings", icon: Settings, enabled: true },
 ];
 
 function initials(name: string): string {

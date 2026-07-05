@@ -12,12 +12,17 @@ from fastapi import Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.exceptions import AuthenticationError, PermissionDeniedError
+from app.core.exceptions import AuthenticationError, NotFoundError, PermissionDeniedError
 from app.core.security import decode_token
 from app.db.session import get_db
+from app.models.company import Company
 from app.models.user import User, UserRole
+from app.repositories.company import CompanyRepository
 from app.repositories.user import UserRepository
+from app.services.api_key import ApiKeyService
 from app.services.auth import AuthService
+from app.services.company import CompanyService
+from app.services.user import UserService
 
 # `auto_error=False` lets us raise our own domain error (mapped to a clean 401)
 # instead of FastAPI's default 403 when the Authorization header is missing.
@@ -75,3 +80,34 @@ def require_roles(*allowed: UserRole):
 # Convenience aliases for the common authorisation tiers.
 AdminUser = Annotated[User, Depends(require_roles(UserRole.ADMIN))]
 ManagerUser = Annotated[User, Depends(require_roles(UserRole.ADMIN, UserRole.MANAGER))]
+
+
+# ── Tenant context ────────────────────────────────────────────────────────────
+async def get_current_company(session: SessionDep, user: CurrentUser) -> Company:
+    """Load the company (tenant) the authenticated user belongs to."""
+    company = await CompanyRepository(session).get(user.company_id)
+    if company is None:
+        raise NotFoundError("Company not found.")
+    return company
+
+
+CurrentCompany = Annotated[Company, Depends(get_current_company)]
+
+
+# ── Service factories ─────────────────────────────────────────────────────────
+def get_company_service(session: SessionDep) -> CompanyService:
+    return CompanyService(session)
+
+
+def get_user_service(session: SessionDep) -> UserService:
+    return UserService(session)
+
+
+def get_api_key_service(session: SessionDep, user: CurrentUser) -> ApiKeyService:
+    """An API-key service already scoped to the caller's tenant."""
+    return ApiKeyService(session, user.company_id)
+
+
+CompanyServiceDep = Annotated[CompanyService, Depends(get_company_service)]
+UserServiceDep = Annotated[UserService, Depends(get_user_service)]
+ApiKeyServiceDep = Annotated[ApiKeyService, Depends(get_api_key_service)]

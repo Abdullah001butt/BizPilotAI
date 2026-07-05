@@ -11,6 +11,7 @@ PREFIX = settings.API_V1_PREFIX
 VALID_USER = {
     "email": "jane@bizpilot.ai",
     "full_name": "Jane Doe",
+    "company_name": "Acme Inc",
     "password": "Secret123",
 }
 
@@ -27,12 +28,14 @@ async def _login(client: AsyncClient, email: str, password: str) -> dict:
 
 
 # ── Registration ─────────────────────────────────────────────────────────────
-async def test_register_creates_employee(client: AsyncClient) -> None:
+async def test_register_creates_company_owner_admin(client: AsyncClient) -> None:
     response = await _register(client)
     assert response.status_code == 201
     body = response.json()
     assert body["email"] == VALID_USER["email"]
-    assert body["role"] == "employee"
+    # The first user of a new company is its owner → ADMIN.
+    assert body["role"] == "admin"
+    assert body["company_id"] >= 1
     assert body["is_active"] is True
     assert "hashed_password" not in body  # never leak the hash
 
@@ -81,7 +84,9 @@ async def test_me_returns_profile_with_token(client: AsyncClient) -> None:
         headers={"Authorization": f"Bearer {tokens['access_token']}"},
     )
     assert response.status_code == 200
-    assert response.json()["email"] == VALID_USER["email"]
+    body = response.json()
+    assert body["user"]["email"] == VALID_USER["email"]
+    assert body["company"]["name"] == VALID_USER["company_name"]
 
 
 # ── Refresh rotation + logout ───────────────────────────────────────────────────
