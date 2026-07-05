@@ -22,9 +22,12 @@ dependencies = [
     "greenlet==3.1.1",          # required by SQLAlchemy async
 
     # Validation & settings
-    "pydantic==2.10.4",
+    "pydantic==2.13.4",
     "pydantic-settings==2.7.1",
     "email-validator==2.2.0",
+
+    # AI / LLM
+    "google-genai==2.10.0",
 
     # Security
     "passlib[argon2]==1.7.4",

@@ -22,7 +22,7 @@ import { cn } from "@/lib/utils";
 // the information architecture is visible from day one.
 const NAV_ITEMS = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard, enabled: true },
-  { to: "/copilot", label: "AI Copilot", icon: Bot, enabled: false },
+  { to: "/copilot", label: "AI Copilot", icon: Bot, enabled: true },
   { to: "/inventory", label: "Inventory", icon: Boxes, enabled: true },
   { to: "/sales", label: "Sales", icon: Receipt, enabled: true },
   { to: "/customers", label: "Customers", icon: Users, enabled: true },

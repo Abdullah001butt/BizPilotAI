@@ -61,3 +61,19 @@ class PermissionDeniedError(AppError):
 class InactiveUserError(AuthenticationError):
     error_code = "inactive_user"
     message = "This account is inactive."
+
+
+class AIUnavailableError(AppError):
+    """The AI Copilot is not configured (no API key)."""
+
+    status_code = status.HTTP_503_SERVICE_UNAVAILABLE
+    error_code = "ai_not_configured"
+    message = "The AI Copilot is not configured. Add a GEMINI_API_KEY to enable it."
+
+
+class AIError(AppError):
+    """The upstream LLM provider failed."""
+
+    status_code = status.HTTP_502_BAD_GATEWAY
+    error_code = "ai_error"
+    message = "The AI service failed to respond. Please try again."

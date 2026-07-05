@@ -15,6 +15,9 @@ os.environ.setdefault("DATABASE_URL", "sqlite+aiosqlite:///:memory:")
 os.environ.setdefault("ENVIRONMENT", "development")
 os.environ.setdefault("DEBUG", "true")
 os.environ.setdefault("BACKEND_CORS_ORIGINS", "http://localhost:5173")
+# Force the Copilot OFF in tests so the suite never makes a live LLM call — the
+# real key may live in a local .env, which pydantic-settings would otherwise read.
+os.environ["GEMINI_API_KEY"] = ""
 
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient

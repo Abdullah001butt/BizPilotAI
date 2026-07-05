@@ -6,12 +6,16 @@ they need (`CurrentUser`, `AdminUser`, `AuthServiceDep`) and FastAPI wires it up
 
 from __future__ import annotations
 
+from functools import lru_cache
 from typing import Annotated
 
 from fastapi import Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.ai.base import LLMProvider
+from app.ai.gemini import GeminiProvider
+from app.core.config import settings
 from app.core.exceptions import AuthenticationError, NotFoundError, PermissionDeniedError
 from app.core.security import decode_token
 from app.db.session import get_db
@@ -23,6 +27,7 @@ from app.services.analytics import AnalyticsService
 from app.services.api_key import ApiKeyService
 from app.services.auth import AuthService
 from app.services.company import CompanyService
+from app.services.copilot import CopilotService
 from app.services.customer import CustomerService
 from app.services.product import ProductService
 from app.services.sale import SaleService
@@ -144,3 +149,27 @@ SupplierServiceDep = Annotated[SupplierService, Depends(get_supplier_service)]
 CustomerServiceDep = Annotated[CustomerService, Depends(get_customer_service)]
 SaleServiceDep = Annotated[SaleService, Depends(get_sale_service)]
 AnalyticsServiceDep = Annotated[AnalyticsService, Depends(get_analytics_service)]
+
+
+# ── AI Copilot ────────────────────────────────────────────────────────────────
+@lru_cache
+def _build_provider() -> LLMProvider | None:
+    """Build the LLM provider once per process (None if no API key is set)."""
+    if not settings.is_ai_configured:
+        return None
+    return GeminiProvider(settings.GEMINI_API_KEY, settings.GEMINI_MODEL)
+
+
+def get_llm_provider() -> LLMProvider | None:
+    return _build_provider()
+
+
+def get_copilot_service(
+    session: SessionDep,
+    company: CurrentCompany,
+    provider: Annotated[LLMProvider | None, Depends(get_llm_provider)],
+) -> CopilotService:
+    return CopilotService(session, company, provider)
+
+
+CopilotServiceDep = Annotated[CopilotService, Depends(get_copilot_service)]

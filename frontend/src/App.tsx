@@ -4,6 +4,7 @@ import { AppShell } from "@/components/layout/AppShell";
 import { AuthLayout } from "@/features/auth/AuthLayout";
 import { LoginPage } from "@/features/auth/LoginPage";
 import { RegisterPage } from "@/features/auth/RegisterPage";
+import { CopilotPage } from "@/features/copilot/CopilotPage";
 import { CustomersPage } from "@/features/customers/CustomersPage";
 import { DashboardPage } from "@/features/dashboard/DashboardPage";
 import { InventoryPage } from "@/features/inventory/InventoryPage";
@@ -29,6 +30,7 @@ export function App() {
         <Route element={<ProtectedRoute />}>
           <Route element={<AppShell />}>
             <Route index element={<DashboardPage />} />
+            <Route path="/copilot" element={<CopilotPage />} />
             <Route path="/inventory" element={<InventoryPage />} />
             <Route path="/sales" element={<SalesPage />} />
             <Route path="/customers" element={<CustomersPage />} />

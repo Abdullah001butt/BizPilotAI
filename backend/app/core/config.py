@@ -63,6 +63,10 @@ class Settings(BaseSettings):
     FIRST_SUPERUSER_PASSWORD: str = "ChangeMe123!"
     FIRST_SUPERUSER_NAME: str = "BizPilot Admin"
 
+    # ── AI / LLM (Gemini) ────────────────────────────────────────────────────
+    GEMINI_API_KEY: str = ""
+    GEMINI_MODEL: str = "gemini-2.0-flash"
+
     @field_validator("BACKEND_CORS_ORIGINS", mode="before")
     @classmethod
     def _split_cors(cls, value: object) -> object:
@@ -80,6 +84,11 @@ class Settings(BaseSettings):
     @property
     def is_sqlite(self) -> bool:
         return self.DATABASE_URL.startswith("sqlite")
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def is_ai_configured(self) -> bool:
+        return bool(self.GEMINI_API_KEY)
 
 
 @lru_cache
