@@ -98,6 +98,29 @@ async def test_copilot_gated_for_free_plan_when_billing_configured(
 
 
 # ── Webhook sync (unit test of the handler) ─────────────────────────────────────
+def test_period_end_reads_stripe_objects() -> None:
+    """Regression: `_field`/`_period_end` must work on real Stripe objects.
+
+    Stripe's StripeObject overrides attribute access so `.get()` fails; this
+    previously made subscription sync crash and silently leave users on Free.
+    """
+    import stripe
+
+    from app.services.billing import _field, _period_end
+
+    top = stripe.Subscription.construct_from(
+        {"id": "sub_x", "current_period_end": 1893456000, "customer": "cus_x"}, "sk_test"
+    )
+    assert _field(top, "customer") == "cus_x"
+    assert _period_end(top) is not None
+
+    # Newer API shape: the field lives on the first subscription item.
+    nested = stripe.Subscription.construct_from(
+        {"id": "sub_y", "items": {"data": [{"current_period_end": 1893456000}]}}, "sk_test"
+    )
+    assert _period_end(nested) is not None
+
+
 async def test_webhook_activates_and_cancels_pro() -> None:
     engine = create_async_engine(
         "sqlite+aiosqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool

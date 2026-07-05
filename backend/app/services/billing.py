@@ -36,17 +36,29 @@ def _to_datetime(unix_ts: int | None) -> datetime | None:
     return datetime.fromtimestamp(unix_ts, tz=timezone.utc) if unix_ts else None
 
 
+def _field(obj: Any, key: str, default: Any = None) -> Any:
+    """Safely read a key from a Stripe object OR a plain dict.
+
+    Stripe's `StripeObject` overrides attribute access, so `.get()` is unreliable;
+    subscript access works consistently for both StripeObject and dict.
+    """
+    try:
+        return obj[key]
+    except (KeyError, IndexError, TypeError):
+        return default
+
+
 def _period_end(stripe_sub: Any) -> datetime | None:
     """Extract current_period_end, whether at the top level or on the first item.
 
     Newer Stripe API versions moved this field onto subscription items.
     """
-    ts = stripe_sub.get("current_period_end")
+    ts = _field(stripe_sub, "current_period_end")
     if ts is None:
-        try:
-            ts = stripe_sub["items"]["data"][0]["current_period_end"]
-        except (KeyError, IndexError, TypeError):
-            ts = None
+        items = _field(stripe_sub, "items", {})
+        data = _field(items, "data", [])
+        if data:
+            ts = _field(data[0], "current_period_end")
     return _to_datetime(ts)
 
 
@@ -146,16 +158,16 @@ class StripeWebhookHandler:
         self.session = session
         self.subs = SubscriptionRepository(session)
 
-    async def handle(self, event: dict[str, Any]) -> None:
-        event_type = event.get("type", "")
-        obj = event.get("data", {}).get("object", {})
+    async def handle(self, event: Any) -> None:
+        event_type = _field(event, "type", "")
+        obj = _field(_field(event, "data", {}), "object", {})
 
         if event_type == "checkout.session.completed":
-            await self._activate(obj.get("customer"), obj.get("subscription"))
+            await self._activate(_field(obj, "customer"), _field(obj, "subscription"))
         elif event_type in {"customer.subscription.created", "customer.subscription.updated"}:
             await self._sync_subscription(obj)
         elif event_type == "customer.subscription.deleted":
-            await self._downgrade(obj.get("customer"))
+            await self._downgrade(_field(obj, "customer"))
         else:
             logger.info("stripe_webhook_ignored", type=event_type)
 
@@ -169,14 +181,14 @@ class StripeWebhookHandler:
         await self.session.commit()
         logger.info("subscription_activated", company_id=sub.company_id)
 
-    async def _sync_subscription(self, obj: dict[str, Any]) -> None:
-        sub = await self._find(obj.get("customer"))
+    async def _sync_subscription(self, obj: Any) -> None:
+        sub = await self._find(_field(obj, "customer"))
         if sub is None:
             return
-        status = obj.get("status", "active")
+        status = _field(obj, "status", "active")
         sub.status = status
         sub.plan = PlanTier.PRO if status in _ACTIVE_STATUSES else PlanTier.FREE
-        sub.stripe_subscription_id = obj.get("id")
+        sub.stripe_subscription_id = _field(obj, "id")
         sub.current_period_end = _period_end(obj)
         await self.session.commit()
         logger.info("subscription_synced", company_id=sub.company_id, status=status)
